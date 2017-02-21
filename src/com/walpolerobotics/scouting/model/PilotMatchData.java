@@ -1,16 +1,18 @@
 package com.walpolerobotics.scouting.model;
 
 /**
- * Created by 1153 on 1/28/2017.
+ * Created by 1153 on 2/5/2017.
  */
-public class RobotMatchData {
+public class PilotMatchData {
+    public Integer teamNumber;
     public Integer timeStamp;
+    public String allianceColor;
     public String gameEvent;
+    public Integer gearTime;
     public String matchNumber;
-    public Integer robotNumber;
     public String firstCompetition;
-    public Integer subEvent;
-    public Integer highGoalsScore;
+    public Integer ropeTime;
+
 
 
 

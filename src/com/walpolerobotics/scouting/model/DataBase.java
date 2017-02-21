@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -37,81 +38,159 @@ public class DataBase {
         }
     }
 
-    public void writeRobotToDB (Robot r){
+
+
+
+
+
+
+
+
+    public void writePitDataToDB (RobotPitData rpd) {
+        Statement stmt = null;
+        try {
+            stmt = con.createStatement();
+            String ss = new String();
+            //ss = "INSERT INTO pitInfo(Scout)\nVALUES\n(";
+            ss = "INSERT INTO pitinfo(competition, team, scouterName, ballCapacity, tallFootPrint, shooting, gearCollect, ballCollection, customRope, frame)\nVALUES\n(" + "\"" + rpd.competition +"\"";
+            ss += ", \"" + rpd.team + "\"";
+            ss += ", \"" + rpd.scouterName + "\"";
+            ss += ", \"" + rpd.ballCapacity + "\"";
+            ss += ", \"" + rpd.footPrint + "\"";
+            ss += ", \"" + rpd.shooting + "\"";
+            ss += ", \"" + rpd.gearCollect + "\"";
+            ss += ", \"" + rpd.ballCollection + "\"";
+            ss += ", \"" + rpd.rope + "\"";
+            ss += ", \"" + rpd.frame + "\")";
+
+            stmt.execute(ss);
+
+
+        }catch(SQLException ex) {
+                System.out.println("SQLException: " + ex.getMessage());
+
+            }
+
+
+
+    }
+
+    public void writePilotDataToDB (PilotData pd) {
         Statement stmt = null;
         ResultSet rs = null;
 
-        for (RobotMatch rm : r.robotMatch){
-            try{
+
+            try {
                 stmt = con.createStatement();
-                String ss = "SELECT * FROM matchTable;";
+                String ss = "SELECT * FROM pilotdata;";
 
                 rs = stmt.executeQuery(ss);
                 Boolean dataExists = false;
 
 
-                while (rs.next()){
-                    Integer RobotNumber = rs.getInt("RobotNumber");
-                    String FirstCompetition = rs.getString("FirstCompetition");
-                    String MatchNumber = rs.getString("MatchNumber");
-                    String AllianceColor = rs.getString("AllianceColor");
-                    String ScouterName = rs.getString("ScouterName");
+                while (rs.next()) {
 
-                    if ((RobotNumber.intValue()==rm.getRobotNumber().intValue())&&(FirstCompetition.equals(rm.getFirstCompetition()))&&(MatchNumber.equals(rm.getMatchNumber()))&&(AllianceColor.equals(rm.getAllianceColor()))&&(ScouterName.equals(rm.getScouterName()))){
+
+                    String FirstCompetition = rs.getString("competition");
+                    String MatchNumber = rs.getString("matchNumber");
+                    String AllianceColor = rs.getString("allianceColor");
+
+
+                    if ((FirstCompetition.equals(pd.firstCompetition.getValue())) && (MatchNumber.equals(pd.matchNumber.getValue())) && (AllianceColor.equals(pd.allianceColor.getValue()))) {
                         dataExists = true;
                     }
                 }
 
-                if (dataExists!=true) {
-                    stmt = con.createStatement();
-                    ss = "INSERT INTO matchTable (RobotNumber, firstCompetition, matchNumber, allianceColor, scouterName )\nVALUES\n(" + rm.getRobotNumber();
-                    ss += ", \"" + rm.getFirstCompetition() + "\"";
-                    ss += ", \"" + rm.getMatchNumber() + "\"";
-                    ss += ", \"" + rm.getAllianceColor() + "\"";
-                    ss += ", \"" + rm.getScouterName() + "\"";
+
+                if (!dataExists) {
+                    for (PilotMatchData pmd : pd.getEventList()) {
+
+                        stmt = con.createStatement();
+                        ss = "INSERT INTO pilotdata(competition, matchNumber, allianceColor, timeStamp, gameEvent, teamNumber, totalGearTime, ropeTime)\nVALUES\n(" + "\"" + pmd.firstCompetition + "\"";
+                        ss += ", \"" + pmd.matchNumber + "\"";
+                        ss += ", \"" + pmd.allianceColor + "\"";
+                        ss += ", \"" + pmd.timeStamp + "\"";
+                        ss += ", \"" + pmd.gameEvent + "\"";
+                        ss += ", \"" + pmd.teamNumber + "\"";
+                        ss += ", \"" + pmd.gearTime + "\"";
+                        ss += ", \"" + pmd.ropeTime + "\")";
 
 
-                    ss += ");";
+                        System.out.println(ss);
 
-                    stmt.execute(ss);
+                        stmt.execute(ss);
+                    }
+                }
 
-                    for (RobotMatchData rmd : rm.getEventList()) {
-                        try {
-                            stmt = con.createStatement();
+            }catch(SQLException ex){
+                        System.out.println("SQLException: " + ex.getMessage());
+                    }
 
-                            //;
-                            String st = "INSERT INTO matchdata (RobotNumber, phaseOfMatch, gameEvent, subEvent, timeStamp, firstCompetition)\nVALUES\n(" + rmd.robotNumber;
-                            st += ", \"" + rmd.phaseOfMatch + "\"";
-                            st += ", \"" + rmd.gameEvent + "\"";
-                            st += ", \"" + rmd.subEvent + "\"";
-                            st += ", \"" + rmd.timeStamp + "\"";
-                            st += ", \"" + rmd.firstCompetition + "\"";
+    }
 
 
-                            st += ");";
 
-                            stmt.execute(st);
-                        } catch (SQLException ex) {
+
+    public void writeRobotToDB(Robot r) {
+        Statement stmt = null;
+        ResultSet rs = null;
+
+        for (RobotMatch rm : r.robotMatch) {
+            try {
+                stmt = con.createStatement();
+                String ss = "SELECT * FROM matchdata;";
+
+                rs = stmt.executeQuery(ss);
+                Boolean dataExists = false;
+
+
+                while (rs.next()) {
+                    Integer RobotNumber = rs.getInt("robotNumber");
+                    String MatchNumber = rs.getString("matchNumber");
+                    String ScouterName = rs.getString("scouterName");
+                    String FirstCompetition = rs.getString("firstCompetition");
+
+
+                    if ((RobotNumber == rm.robotNumber.intValue()) && (MatchNumber.equals(rm.matchNumber.getValue())) && (ScouterName.equals(rm.scouterName.getValue())) && (FirstCompetition.equals(rm.firstCompetition.getValue()))) {
+                        dataExists = true;
+                    }
+                }
+
+
+
+                if (!dataExists) {
+                    for(RobotMatchData rmd : rm.getEventList()){
+                        try{
+
+                                stmt = con.createStatement();
+                                ss = "INSERT INTO matchdata (robotNumber, matchNumber, gameEvent, subEvent, highGoalsScore, timeStamp, scouterName, firstCompetition)\nVALUES\n(" + rm.robotNumber.intValue();
+                                ss += ", \"" + rm.matchNumber.get() + "\"";
+                                ss += ", \"" + rmd.gameEvent + "\"";
+                                ss += ", \"" + rmd.subEvent + "\"";
+                                ss += ", \"" + rmd.highGoalsScore + "\"";
+                                ss += ", \"" + rmd.timeStamp + "\"";
+                                ss += ", \"" + rm.scouterName.get() + "\"";
+                                ss += ", \"" + rm.firstCompetition.get() + "\"";
+                                ss += ");";
+                                    stmt.execute(ss);
+                                System.out.println(ss);
+
+                        }catch (SQLException ex) {
                             System.out.println("SQLException: " + ex.getMessage());
 
                         }
+
                     }
                 }
 
 
                 //System.out.println(ss);
 
-            }
-            catch (SQLException ex){
+            } catch (SQLException ex) {
                 System.out.println("SQLException: " + ex.getMessage());
             }
         }
 
 
-
     }
-
-
-
 }
-

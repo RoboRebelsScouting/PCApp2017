@@ -4,7 +4,9 @@ package com.walpolerobotics.scouting.view;
  * Created by 1153 on 1/30/2016.
  */
 import com.walpolerobotics.scouting.model.RobotMatch;
+import javafx.beans.property.ReadOnlyStringWrapper;
 import javafx.fxml.FXML;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
@@ -13,26 +15,33 @@ import com.walpolerobotics.scouting.model.Robot;
 //making the table
 public class RobotOverviewController {
     @FXML
-    private TableView<RobotMatch> robotTable;
+    private TableView<String> robotTable;
     @FXML
-    private TableColumn<RobotMatch, Integer> robotNumberColumn;
-    @FXML
-    private TableColumn<RobotMatch, String> firstCompetitionColumn;
-    @FXML
-    private TableColumn<RobotMatch, String> matchNumberColumn;
-    @FXML
-    private TableColumn<RobotMatch, String> scouterNameColumn;
+    private TableColumn<String, String> importedFilesColumn;
 
 
-//making the data list (right side of the GUI)
+//(button on the right side of the GUI)
     @FXML
-    private Label robotNumberLabel;
+    private Button importdata;
     @FXML
-    private Label firstCompetitionLabel;
+    private Button exportdata;
+
+//file import drop down option
     @FXML
-    private Label matchNumberLabel;
+    private void handleImport(){
+
+
+        mainApp.importAllRobotMatchData();
+
+
+    }
+
     @FXML
-    private Label scouterNameLabel;
+    private void exportMysql(){
+        mainApp.exportMysql();
+    }
+
+
 
 
 
@@ -41,46 +50,24 @@ public class RobotOverviewController {
     public RobotOverviewController(){
 
     }
-    //makes the data list blank until you click on something
-    private void showRobotDetails(RobotMatch robotMatch){
-        if (robotMatch!=null){
-            robotNumberLabel.setText(Integer.toString(robotMatch.getRobotNumber()));
-            firstCompetitionLabel.setText(robotMatch.getFirstCompetition());
-            matchNumberLabel.setText(robotMatch.getMatchNumber());
-            scouterNameLabel.setText(robotMatch.getScouterName());
-
-
-        }
-        else{
-            robotNumberLabel.setText("");
-            firstCompetitionLabel.setText("");
-            matchNumberLabel.setText("");
-            scouterNameLabel.setText("");
 
 
 
-        }
-    }
+
+
     @FXML
     private void initialize(){
-        robotNumberColumn.setCellValueFactory(cellData->cellData.getValue().robotNumberProperty().asObject());
-        firstCompetitionColumn.setCellValueFactory(cellData->cellData.getValue().firstCompetitionProperty());
-        matchNumberColumn.setCellValueFactory(cellData->cellData.getValue().matchNumberProperty());
-        scouterNameColumn.setCellValueFactory(cellData->cellData.getValue().scouterNameProperty());
+        importedFilesColumn.setCellValueFactory(cellData->new ReadOnlyStringWrapper(cellData.getValue()));
 
 
-       //clear robot details
-        showRobotDetails(null);
-        //listen for selection changes and show the robot details when changed
-        robotTable.getSelectionModel().selectedItemProperty().addListener(
-                (observable,oldValue, newValue)-> showRobotDetails(newValue));
+
 
 
 
     }
     public void setMainApp(mainapp mainApp){
         this.mainApp = mainApp;
-        robotTable.setItems(mainApp.getRobotMatchInfo());
+        robotTable.setItems(mainApp.getImportedFilesList());
 
     }
 }
