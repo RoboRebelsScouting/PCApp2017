@@ -15,6 +15,9 @@ public class RobotPitData {
     public String rope;
     public String frame;
     public String notes;
+    public Integer weight;
+    public String climbAbility;
+    public String email;
 
 
 
@@ -30,4 +33,7 @@ public class RobotPitData {
         this.rope = "";
         this.frame = "";
         this.notes = "";
+        this.weight = 0;
+        this.climbAbility = "";
+        this.email = "";
 }}

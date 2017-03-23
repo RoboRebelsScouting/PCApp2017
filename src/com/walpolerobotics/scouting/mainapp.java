@@ -7,22 +7,14 @@ import com.walpolerobotics.scouting.model.Robot;
 import com.walpolerobotics.scouting.view.RobotOverviewController;
 import com.walpolerobotics.scouting.view.RootLayoutController;
 import javafx.application.Application;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.scene.control.Alert;
 import javafx.stage.Stage;
 
-import java.awt.*;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.text.DateFormat;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
 
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
@@ -38,6 +30,9 @@ public class mainapp extends Application {
     private ObservableList<PilotData> pilotMatchInfo = FXCollections.observableArrayList();
     private ObservableList<RobotPitData> robotPitDataList = FXCollections.observableArrayList();
     private ObservableList<String> importedFilesList = FXCollections.observableArrayList();
+    private ObservableList<TD> TableauDataList = FXCollections.observableArrayList();
+    private ObservableList<FirstMatchData> FirstDataList = FXCollections.observableArrayList();
+    private ObservableList<AllianceData> AllianceDataList = FXCollections.observableArrayList();
 
 
     public DataBase db;
@@ -70,24 +65,35 @@ public class mainapp extends Application {
         showRobotOverview();
     }
 
-    public void importAllRobotMatchData(){
+    public void importAllRobotMatchData() {
         File folder = new File("C:/Users/1153/Documents/ImportedMatchFiles");
 
-       String pathName = folder.getAbsolutePath();
-        String [] listOfFiles = folder.list();
-        for (int c=0; c<listOfFiles.length; c++){
+        String pathName = folder.getAbsolutePath();
+        String[] listOfFiles = folder.list();
+        for (int c = 0; c < listOfFiles.length; c++) {
             String fullPathName = pathName + "/" + listOfFiles[c];
             File newFile = new File(fullPathName);
-            if(fullPathName.endsWith(".csv")) {
+            if (fullPathName.endsWith(".csv")) {
                 if (fullPathName.endsWith("-pit.csv")) {
                     importRobotPitData(newFile);
                 } else {
-                    if (fullPathName.endsWith("-pilot.csv")){
+                    if (fullPathName.endsWith("-pilot.csv")) {
                         importPilotMatchData(newFile);
-                    }
-                    else {
-                        importRobotMatchData(newFile);
+                    } else {
+                        if (fullPathName.endsWith("-TD.csv")) {
+                            importTableauData(newFile);
+                        } else {
+                            if (fullPathName.endsWith("-first.csv")) {
+                                importFirstData(newFile);
+                            } else {
+                                if (fullPathName.endsWith("-alliance.csv")) {
+                                    importAlliances(newFile);
+                                } else {
+                                    importRobotMatchData(newFile);
+                                }
+                            }
 
+                        }
                     }
                 }
             }
@@ -104,6 +110,10 @@ public class mainapp extends Application {
             RobotMatch rm = new RobotMatch();
             int lineCount = 0;
             int robotNumber = 0;
+            int approachBoiler = 0;
+            int leaveBoiler = 0;
+            int approachGear = 0;
+            int leaveGear = 0;
             String firstCompetition = "";
             String matchNumber = "";
             String scouterName = "";
@@ -127,22 +137,21 @@ public class mainapp extends Application {
                     rmd.matchNumber = matchNumber;
                     rmd.timeStamp = Integer.parseInt(lineList[0]);
                     rmd.gameEvent = lineList[1];
-                    rmd.highGoalsScore = 0;
+                    rmd.boilerTime = 0;
                     rm.setRobotNumber(robotNumber);
                     rm.setFirstCompetition(firstCompetition);
                     rm.setMatchNumber(matchNumber);
                     rm.setScouterName(scouterName);
                     rmd.subEvent = Integer.parseInt(lineList[2]);
 
-                        if(lineList[1].equals("highGoal") & lineList[2].equals("1")  ){
-                            rmd.highGoalsScore = rmd.highGoalsScore + 1;
-                        }
-                        if(lineList[1].equals("highGoal") & lineList[2].equals("5")  ){
-                            rmd.highGoalsScore = rmd.highGoalsScore + 5;
-                        }
-                        if(lineList[1].equals("highGoal") & lineList[2].equals("10")  ){
-                            rmd.highGoalsScore = rmd.highGoalsScore + 10;
-                        }
+                    if(lineList[1].equals("approachBoiler")){
+                        approachBoiler = Integer.parseInt(lineList[0]);
+                    }
+                    if(lineList[1].equals("leaveBoiler")){
+                        leaveBoiler = Integer.parseInt(lineList[0]);
+                        rmd.boilerTime = leaveBoiler - approachBoiler;
+                    }
+
 
 
                     rm.getEventList().add(rmd);
@@ -172,6 +181,7 @@ public class mainapp extends Application {
             alert.setContentText("Could not load data from file:\n" + file.getPath());
             alert.showAndWait();
         }
+
 
     }
 
@@ -287,11 +297,126 @@ public class mainapp extends Application {
             alert.showAndWait();
         }
 
+
     }
 
-     public void importRobotPitData(File file) {
+     public void importTableauData(File file) {
         try {
-            System.out.println("Reading pit file " + file.getName());
+            System.out.println("Reading tableau file " + file.getName());
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            TD td = new TD();
+
+            int lineCount = 0;
+
+            while ((line = br.readLine()) != null) {
+                String[] lineList = line.split(",");
+                if(lineList.length != 7){
+                    System.out.println("didn't get all columns");
+                    for(int c= 0;c<lineList.length;c++){
+                        System.out.println("column: " + c + " ;value: "  + lineList[c]);
+                    }
+                }
+                if (lineCount == 0) {
+
+                    td.name = lineList[0];
+                    td.team = lineList[1];
+                    td.hairColor = lineList[2];
+                    td.hairStyle = lineList[3];
+                    td.eyeColor = lineList[4];
+                    td.height = lineList[5];
+                    td.personalityNotes = lineList[6];
+
+
+                    lineCount++;
+
+                    TableauDataList.add(td);
+                    importedFilesList.add(file.getName());
+                }
+            }
+            br.close();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+         try {
+             String newPath = "C:\\Users\\1153\\Documents\\PreviouslyAddedTableauData";
+             String newName = newPath+File.separator+file.getName();
+             if(Files.exists(Paths.get(newName))){
+                 newName += System.currentTimeMillis();
+             }
+             Files.move(Paths.get(file.getAbsolutePath()), Paths.get(newName));
+         }catch (IOException e){
+             e.printStackTrace();
+         }
+
+    }
+
+    public void importFirstData(File file) {
+        try {
+            System.out.println("Reading first file " + file.getName());
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+            FirstMatchData fmd = new FirstMatchData();
+
+            int lineCount = 0;
+
+            while ((line = br.readLine()) != null) {
+                String[] lineList = line.split(",");
+                if(lineList.length != 9){
+                    System.out.println("didn't get all columns");
+                    for(int c= 0;c<lineList.length;c++){
+                        System.out.println("column: " + c + " ;value: "  + lineList[c]);
+                    }
+                }
+                if (lineCount == 0) {
+
+
+                    fmd.teamNumber = Integer.parseInt(lineList[0]);
+                    fmd.eventCode = lineList[1];
+                    fmd.qualRank = Integer.parseInt(lineList[2]);
+                    fmd.avgScore = Float.parseFloat(lineList[3]);
+                    fmd.avgHighFuel = Float.parseFloat(lineList[4]);
+                    fmd.avgTeleHigh = Float.parseFloat(lineList[5]);
+                    fmd.avgTeleLow = Float.parseFloat(lineList[6]);
+                    fmd.avgClimbPoints = Float.parseFloat(lineList[7]);
+                    fmd.avgRotorsEngaged = Float.parseFloat(lineList[8]);
+
+
+
+
+
+                    lineCount++;
+
+                    // add this robot pit data to the list
+                    FirstDataList.add(fmd);
+                    importedFilesList.add(file.getName());
+                }
+            }
+            br.close();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        try {
+            String newPath = "C:\\Users\\1153\\Documents\\PreviouslyAddedPitInfo";
+            String newName = newPath+File.separator+file.getName();
+            if(Files.exists(Paths.get(newName))){
+                newName += System.currentTimeMillis();
+            }
+            Files.move(Paths.get(file.getAbsolutePath()), Paths.get(newName));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
+
+    }
+    public void importRobotPitData(File file) {
+        try {
+            System.out.println("Reading first file " + file.getName());
 
             BufferedReader br = new BufferedReader(new FileReader(file));
             String line;
@@ -320,6 +445,9 @@ public class mainapp extends Application {
                     rpd.ballCollection = lineList[7];
                     rpd.rope = lineList[8];
                     rpd.frame = lineList[9];
+                    rpd.climbAbility = lineList[10];
+                    rpd.weight = Integer.parseInt(lineList[11]);
+                    rpd.email = lineList[12];
 
 
 
@@ -335,17 +463,54 @@ public class mainapp extends Application {
         } catch (IOException e){
             e.printStackTrace();
         }
-         try {
-             String newPath = "C:\\Users\\1153\\Documents\\PreviouslyAddedPitInfo";
-             String newName = newPath+File.separator+file.getName();
-             if(Files.exists(Paths.get(newName))){
-                 newName += System.currentTimeMillis();
-             }
-             Files.move(Paths.get(file.getAbsolutePath()), Paths.get(newName));
-         }catch (IOException e){
-             e.printStackTrace();
-         }
+        try {
+            String newPath = "C:\\Users\\1153\\Documents\\PreviouslyAddedPitInfo";
+            String newName = newPath+File.separator+file.getName();
+            if(Files.exists(Paths.get(newName))){
+                newName += System.currentTimeMillis();
+            }
+            Files.move(Paths.get(file.getAbsolutePath()), Paths.get(newName));
+        }catch (IOException e){
+            e.printStackTrace();
+        }
 
+    }
+    public void importAlliances(File file) {
+        try {
+            System.out.println("Reading first file " + file.getName());
+
+            BufferedReader br = new BufferedReader(new FileReader(file));
+            String line;
+
+
+            int lineCount = 0;
+
+          ;
+
+            while ((line = br.readLine()) != null) {
+                AllianceData ad = new AllianceData();
+                String[] lineList = line.split(",");
+
+                    ad.allianceNumber = Integer.parseInt(lineList[0]);
+                    ad.robot1 = Integer.parseInt(lineList[1]);
+                    ad.robot2 = Integer.parseInt(lineList[2]);
+                    ad.robot3 = Integer.parseInt(lineList[3]);
+
+
+                    AllianceDataList.add(ad);
+                    lineCount++;
+
+                    // add this robot pit data to the list
+
+
+
+            }
+            importedFilesList.add(file.getName());
+            br.close();
+
+        } catch (IOException e){
+            e.printStackTrace();
+        }
     }
 
     public void initRootLayout() {
@@ -397,6 +562,9 @@ public class mainapp extends Application {
 
         for (PilotData pd : this.pilotMatchInfo) {
             db.writePilotDataToDB(pd);
+        }
+        for (AllianceData ad : this.AllianceDataList){
+            db.constructAllianceData(ad);
         }
     }
 

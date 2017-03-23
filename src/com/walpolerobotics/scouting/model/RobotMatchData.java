@@ -10,7 +10,7 @@ public class RobotMatchData {
     public Integer robotNumber;
     public String firstCompetition;
     public Integer subEvent;
-    public Integer highGoalsScore;
+    public Integer boilerTime;
 
 
 
