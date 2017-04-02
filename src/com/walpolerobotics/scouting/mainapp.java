@@ -142,7 +142,18 @@ public class mainapp extends Application {
                     rm.setFirstCompetition(firstCompetition);
                     rm.setMatchNumber(matchNumber);
                     rm.setScouterName(scouterName);
-                    rmd.subEvent = Integer.parseInt(lineList[2]);
+
+
+                    if(lineList[1].equals("allianceColor")&& lineList[2].equals("Blue")){
+                        rmd.subEvent = 0;
+                    }else{
+                        if(lineList[1].equals("allianceColor")&& lineList[2].equals("Red")) {
+                            rmd.subEvent = 1;
+                        }else{
+                            rmd.subEvent = Integer.parseInt(lineList[2]);
+                        }
+                    }
+
 
                     if(lineList[1].equals("approachBoiler")){
                         approachBoiler = Integer.parseInt(lineList[0]);
