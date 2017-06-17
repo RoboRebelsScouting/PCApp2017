@@ -185,12 +185,22 @@ public class mainapp extends Application {
 
             robotData.add(r);
             robotMatchInfo.add(rm);
+            br.close();
         } catch (IOException e) {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle("Error");
             alert.setHeaderText("Could not load data");
             alert.setContentText("Could not load data from file:\n" + file.getPath());
             alert.showAndWait();
+        }
+
+        try {
+            String newPath = "C:\\Users\\1153\\Documents\\PreviouslyAddedMatches";
+            String newName = newPath+File.separator+file.getName();
+
+            Files.move(Paths.get(file.getAbsolutePath()), Paths.get(newName));
+        }catch (IOException e){
+            e.printStackTrace();
         }
 
 
